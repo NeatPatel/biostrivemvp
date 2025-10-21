@@ -1,0 +1,77 @@
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+// BioStrive Custom Styles
+:root {
+    --biostrive-primary: #0d6efd;
+    --biostrive-secondary: #6c757d;
+    --biostrive-success: #198754;
+    --biostrive-warning: #ffc107;
+    --biostrive-danger: #dc3545;
+    --biostrive-info: #0dcaf0;
+}
+
+a:hover {
+    scale: 1.05;
+    transition: transform 0.2s ease-in-out;
+}
+
+button:hover {
+    scale: 1.05;
+    transition: transform 0.2s ease-in-out;
+}
+
+body {
+    background-color: $light;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+// Custom BioStrive branding
+.biostrive-gradient {
+    background: linear-gradient(135deg, var(--biostrive-primary) 0%, var(--biostrive-info) 100%);
+}
+
+.biostrive-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.biostrive-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+// Custom animations
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+// Enhanced button styles
+.btn-primary {
+    background: linear-gradient(135deg, var(--biostrive-primary) 0%, #0056b3 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, var(--biostrive-primary) 100%);
+    transform: translateY(-1px);
+}
+
+// Custom spacing utilities
+.mt-25 { margin-top: 6rem !important; }
+.mb-25 { margin-bottom: 6rem !important; }
