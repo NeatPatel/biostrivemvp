@@ -23,6 +23,11 @@ except Exception as e:
     print(f"Error loading data: {e}")
     print("Starting with empty database...")
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({'status': 'healthy', 'message': 'BioStrive Backend is running'}), 200
+
 @app.route('/generate-claims', methods=['POST'])
 def generate_claims():
     try:
@@ -36,6 +41,20 @@ def generate_claims():
         for chunk, similarity in retrieved_knowledge:
             print(f' - (similarity: {similarity:.2f}) {chunk}')
 
+        # Check if we have retrieved knowledge
+        if not retrieved_knowledge:
+            # Fallback response when no knowledge is retrieved
+            fallback_response = f"""Based on the indication '{input_query}', here are some potential claims:
+
+1. Superior efficacy compared to standard of care in {input_query} patients
+2. Improved progression-free survival in treated patients
+3. Favorable safety profile with manageable adverse events
+4. Enhanced quality of life outcomes
+5. Cost-effective treatment option for {input_query}
+
+Note: These are example claims. For evidence-based claims, please ensure Ollama is running and models are available."""
+            return jsonify({'response': fallback_response}), 200
+
         instruction_prompt = f'''You are a helpful AI assistant for life sciences claims generation.
         Use only the following pieces of context to generate relevant claims. Don't make up any new information:
         {'\n'.join([f' - {chunk}' for chunk, similarity in retrieved_knowledge])}
@@ -43,15 +62,24 @@ def generate_claims():
         Generate 3-5 specific, evidence-based claims for the given therapeutic indication.
         '''
 
-        response = ollama.chat(
-            model=vector_database.LANGUAGE_MODEL,
-            messages=[
-                {'role': 'system', 'content': instruction_prompt},
-                {'role': 'user', 'content': f"Generate claims for: {input_query}"},
-            ]
-        )
+        try:
+            response = ollama.chat(
+                model=vector_database.LANGUAGE_MODEL,
+                messages=[
+                    {'role': 'system', 'content': instruction_prompt},
+                    {'role': 'user', 'content': f"Generate claims for: {input_query}"},
+                ]
+            )
+            return jsonify({'response': response['message']['content']}), 200
+        except Exception as ollama_error:
+            print(f"Ollama error: {ollama_error}")
+            # Fallback to retrieved knowledge
+            fallback_response = f"""Based on available evidence for '{input_query}':
 
-        return jsonify({'response': response['message']['content']}), 200
+{chr(10).join([f'• {chunk}' for chunk, similarity in retrieved_knowledge[:3]])}
+
+Note: AI generation unavailable. Showing retrieved evidence only."""
+            return jsonify({'response': fallback_response}), 200
 
     except Exception as e:
         print(f"Error in generate_claims: {e}")

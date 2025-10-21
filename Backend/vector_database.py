@@ -8,5 +8,11 @@ LANGUAGE_MODEL = 'hf.co/bartowski/Llama-3.2-1B-Instruct-GGUF'
 VECTOR_DB = []
 
 def add_chunk_to_database(chunk):
-    embedding = ollama.embed(model=EMBEDDING_MODEL, input=chunk)['embeddings'][0]
-    VECTOR_DB.append((chunk, embedding))
+    try:
+        response = ollama.embeddings(model=EMBEDDING_MODEL, prompt=chunk)
+        embedding = response['embedding']
+        VECTOR_DB.append((chunk, embedding))
+    except Exception as e:
+        print(f"Error generating embedding for chunk: {e}")
+        # Add a dummy embedding to prevent crashes
+        VECTOR_DB.append((chunk, [0.0] * 384))  # BGE embeddings are typically 384-dimensional
