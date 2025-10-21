@@ -56,7 +56,7 @@ function Demo() {
                     <div className="mb-3">
                         <label className="form-label">Target Indication</label>
                         <input type="text" className="form-control" placeholder="e.g., Advanced Melanoma" value={inputQuery} onChange={(e) => setInputQuery(e.target.value)} />
-                        <Button variant="primary" size="lg" onClick={generateClaims} className="mt-3"s>
+                         <Button variant="primary" size="lg" onClick={generateClaims} className="mt-3">
                             Generate Claims
                         </Button>
                     </div>

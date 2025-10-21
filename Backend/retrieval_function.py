@@ -18,6 +18,3 @@ def retrieve(query, top_n=3):
     similarities.sort(key=lambda x: x[1], reverse=True)
     # finally, return the top N most relevant chunks
     return similarities[:top_n]
-
-export retrieve
-export cosine_similarity

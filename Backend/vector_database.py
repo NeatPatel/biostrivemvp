@@ -10,8 +10,3 @@ VECTOR_DB = []
 def add_chunk_to_database(chunk):
     embedding = ollama.embed(model=EMBEDDING_MODEL, input=chunk)['embeddings'][0]
     VECTOR_DB.append((chunk, embedding))
-
-export add_chunk_to_database
-export EMBEDDING_MODEL
-export LANGUAGE_MODEL
-export VECTOR_DB
