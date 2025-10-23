@@ -10,6 +10,10 @@ CORS(app)
 
 dataset = []
 
+# Each element in the VECTOR_DB will be a tuple (chunk, embedding)
+# The embedding is a list of floats, for example: [0.1, 0.04, -0.34, 0.21, ...]
+VECTOR_DB = []
+
 try:
     with open('data/claims.txt', 'r') as file:
         dataset = file.readlines()
@@ -17,8 +21,9 @@ try:
 
     for i, chunk in enumerate(dataset):
         if chunk.strip():  # Only process non-empty lines
-            vector_database.add_chunk_to_database(chunk.strip())
+            VECTOR_DB.append(vector_database.add_chunk_to_database(chunk.strip()))
             print(f'Added chunk {i+1}/{len(dataset)} to the database')
+
 except Exception as e:
     print(f"Error loading data: {e}")
     print("Starting with empty database...")
@@ -87,4 +92,7 @@ Note: AI generation unavailable. Showing retrieved evidence only."""
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    print("Starting BioStrive Backend Server...")
+    print("Server will be available at: http://localhost:5000")
+    print("Health check endpoint: http://localhost:5000/health")
+    app.run(host='0.0.0.0', port=5000, debug=True)

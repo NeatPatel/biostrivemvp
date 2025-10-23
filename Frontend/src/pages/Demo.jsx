@@ -7,6 +7,8 @@ function Demo() {
     const [demoStep, setDemoStep] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
     const [inputQuery, setInputQuery] = useState('');
+    const [response, setResponse] = useState('');
+    const [error, setError] = useState('');
 
     const startDemo = () => {
         setIsGenerating(true);
@@ -16,21 +18,42 @@ function Demo() {
     const generateClaims = async () => {
         setDemoStep(2);
         setIsGenerating(false);
+        setError('');
+        setResponse('');
 
-        const response = await fetch('http://localhost:5000/generate-claims', {
-            method: 'POST',
-            body: JSON.stringify({ input_query: inputQuery.trim() }),
-            headers: {
-                'Content-Type': 'application/json'
+        try {
+            const response = await fetch('http://localhost:5000/generate-claims', {
+                method: 'POST',
+                body: JSON.stringify({ input_query: inputQuery.trim() }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        });
-        const data = await response.json();
-        console.log(data.response);
+
+            const data = await response.json();
+            
+            if (data.error) {
+                setError('An error has occurred, please try again');
+            } else {
+                setResponse(data.response);
+            }
+        } catch (err) {
+            console.error('Error generating claims:', err);
+            setError('An error has occurred, please try again');
+        } finally {
+            setDemoStep(3);
+        }
     };
 
     const resetDemo = () => {
         setDemoStep(0);
         setIsGenerating(false);
+        setResponse('');
+        setError('');
     };
 
     const demoSteps = [
@@ -96,38 +119,53 @@ function Demo() {
             content: (
                 <div className="p-4">
                     <h5>Claims Matrix Output</h5>
-                    <div className="table-responsive">
-                        <table className="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Claim</th>
-                                    <th>Source</th>
-                                    <th>Evidence Level</th>
-                                    <th>KOL Support</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Superior efficacy vs. standard of care</td>
-                                    <td>NEJM 2024, Lancet 2023</td>
-                                    <td><Badge bg="success">High</Badge></td>
-                                    <td>Dr. Smith, Dr. Johnson</td>
-                                </tr>
-                                <tr>
-                                    <td>Improved progression-free survival</td>
-                                    <td>JCO 2024, ASCO 2023</td>
-                                    <td><Badge bg="success">High</Badge></td>
-                                    <td>Dr. Williams, Dr. Brown</td>
-                                </tr>
-                                <tr>
-                                    <td>Favorable safety profile</td>
-                                    <td>Nature Medicine 2024</td>
-                                    <td><Badge bg="warning">Medium</Badge></td>
-                                    <td>Dr. Davis</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    {error && (
+                        <Alert variant="danger" className="mb-4">
+                            {error}
+                        </Alert>
+                    )}
+                    {response && !error && (
+                        <div className="mb-4">
+                            <h6>Generated Claims:</h6>
+                            <div className="bg-light p-3 rounded" style={{whiteSpace: 'pre-wrap'}}>
+                                {response}
+                            </div>
+                        </div>
+                    )}
+                    {!response && !error && (
+                        <div className="table-responsive">
+                            <table className="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Claim</th>
+                                        <th>Source</th>
+                                        <th>Evidence Level</th>
+                                        <th>KOL Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Superior efficacy vs. standard of care</td>
+                                        <td>NEJM 2024, Lancet 2023</td>
+                                        <td><Badge bg="success">High</Badge></td>
+                                        <td>Dr. Smith, Dr. Johnson</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Improved progression-free survival</td>
+                                        <td>JCO 2024, ASCO 2023</td>
+                                        <td><Badge bg="success">High</Badge></td>
+                                        <td>Dr. Williams, Dr. Brown</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Favorable safety profile</td>
+                                        <td>Nature Medicine 2024</td>
+                                        <td><Badge bg="warning">Medium</Badge></td>
+                                        <td>Dr. Davis</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                     <div className="mt-3">
                         <Button variant="primary" className="me-2">Export to Excel</Button>
                         <Button variant="outline-primary">Customize Claims</Button>
