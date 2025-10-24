@@ -2,30 +2,56 @@ import styles from './demo.module.scss';
 import { Card, Row, Col, Button, Badge, Alert, ProgressBar } from 'react-bootstrap';
 import ContentBlock from '../components/ContentBlock.jsx';
 import ReactMarkdown from "react-markdown";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function Demo() {
     const [demoStep, setDemoStep] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [inputQuery, setInputQuery] = useState('');
+    const [productName, setProductName] = useState('');
+    const [therapeuticArea, setTherapeuticArea] = useState('Oncology');
+    const [targetIndication, setTargetIndication] = useState('');
     const [response, setResponse] = useState('');
     const [error, setError] = useState('');
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        let progressInterval;
+        if (isGenerating) {
+            setProgress(0);
+            progressInterval = setInterval(() => {
+                setProgress(prev => {
+                    if (prev < 75) {
+                        return prev + 0.5;
+                    } else if (prev < 99) {
+                        return prev + 0.2;
+                    }
+                    return 99;
+                });
+            }, 100);
+        }
+        return () => clearInterval(progressInterval);
+    }, [isGenerating]);
 
     const startDemo = () => {
-        setIsGenerating(true);
+        setIsGenerating(false);
+        setProgress(0);
         setDemoStep(1);
     };
 
     const generateClaims = async () => {
         setDemoStep(2);
-        setIsGenerating(false);
+        setIsGenerating(true);
         setError('');
         setResponse('');
 
         try {
+            const formattedQuery = `Create claims matrix for ${productName}
+Therapeutic Area is ${therapeuticArea}
+Target Indication of drug is ${targetIndication}`;
+
             const response = await fetch('http://localhost:5000/generate-claims', {
                 method: 'POST',
-                body: JSON.stringify({ input_query: inputQuery.trim() }),
+                body: JSON.stringify({ input_query: formattedQuery.trim() }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -40,13 +66,15 @@ function Demo() {
             if (data.error) {
                 setError('An error has occurred, please try again');
             } else {
+                setProgress(100);
+                setIsGenerating(false);
                 setResponse(data.response);
             }
         } catch (err) {
             console.error('Error generating claims:', err);
             setError('An error has occurred, please try again');
         } finally {
-            setDemoStep(3);
+            setTimeout(() => setDemoStep(3), 500);
         }
     };
 
@@ -66,11 +94,21 @@ function Demo() {
                     <h5>Product Information</h5>
                     <div className="mb-3">
                         <label className="form-label">Product Name</label>
-                        <input type="text" className="form-control" placeholder="e.g., NexGen Immunotherapy" />
+                        <input 
+                            type="text" 
+                            className="form-control" 
+                            placeholder="e.g., NexGen Immunotherapy"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                        />
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Therapeutic Area</label>
-                        <select className="form-select">
+                        <select 
+                            className="form-select"
+                            value={therapeuticArea}
+                            onChange={(e) => setTherapeuticArea(e.target.value)}
+                        >
                             <option>Oncology</option>
                             <option>Cardiology</option>
                             <option>Neurology</option>
@@ -79,7 +117,13 @@ function Demo() {
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Target Indication</label>
-                        <input type="text" className="form-control" placeholder="e.g., Advanced Melanoma" value={inputQuery} onChange={(e) => setInputQuery(e.target.value)} />
+                        <input 
+                            type="text" 
+                            className="form-control" 
+                            placeholder="e.g., Advanced Melanoma" 
+                            value={targetIndication} 
+                            onChange={(e) => setTargetIndication(e.target.value)} 
+                        />
                          <Button variant="primary" size="lg" onClick={generateClaims} className="mt-3">
                             Generate Claims
                         </Button>
@@ -98,7 +142,7 @@ function Demo() {
                         </div>
                     </div>
                     <h5>Generating Claims Matrix...</h5>
-                    <ProgressBar animated now={75} className="mb-3" />
+                    <ProgressBar animated now={progress} className="mb-3" />
                     <p className="text-muted">Analyzing 1,247 research papers and clinical studies</p>
                     <div className="row text-center">
                         <div className="col-4">
@@ -167,10 +211,6 @@ function Demo() {
                             </table>
                         </div>
                     )}
-                    <div className="mt-3">
-                        <Button variant="primary" className="me-2">Export to Excel</Button>
-                        <Button variant="outline-primary">Customize Claims</Button>
-                    </div>
                 </div>
             )
         }
