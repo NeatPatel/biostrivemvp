@@ -7,10 +7,10 @@ def cosine_similarity(a, b):
     norm_b = sum([x ** 2 for x in b]) ** 0.5
     return dot_product / (norm_a * norm_b)
 
-def retrieve(query, top_n=3):
+def retrieve(query, top_n=3, VECTOR_DB=[]):
     try:
-        response = ollama.embeddings(model=vector_database.EMBEDDING_MODEL, prompt=query)
-        query_embedding = response['embedding']
+        response = ollama.embed(model=vector_database.EMBEDDING_MODEL, input=query)
+        query_embedding = response['embeddings'][0]
     except Exception as e:
         print(f"Error generating query embedding: {e}")
         # Return empty results if embedding fails
@@ -18,7 +18,7 @@ def retrieve(query, top_n=3):
     
     # temporary list to store (chunk, similarity) pairs
     similarities = []
-    for chunk, embedding in vector_database.VECTOR_DB:
+    for chunk, embedding in VECTOR_DB:
         similarity = cosine_similarity(query_embedding, embedding)
         similarities.append((chunk, similarity))
     # sort by similarity in descending order, because higher similarity means more relevant chunks

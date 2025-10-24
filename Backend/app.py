@@ -28,11 +28,6 @@ except Exception as e:
     print(f"Error loading data: {e}")
     print("Starting with empty database...")
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'message': 'BioStrive Backend is running'}), 200
-
 @app.route('/generate-claims', methods=['POST'])
 def generate_claims():
     try:
@@ -40,7 +35,7 @@ def generate_claims():
         if not input_query:
             return jsonify({'error': 'No input query provided'}), 400
 
-        retrieved_knowledge = retrieval_function.retrieve(input_query)
+        retrieved_knowledge = retrieval_function.retrieve(input_query, 3, VECTOR_DB)
 
         print('Retrieved knowledge:')
         for chunk, similarity in retrieved_knowledge:

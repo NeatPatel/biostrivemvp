@@ -1,6 +1,7 @@
 import styles from './demo.module.scss';
 import { Card, Row, Col, Button, Badge, Alert, ProgressBar } from 'react-bootstrap';
 import ContentBlock from '../components/ContentBlock.jsx';
+import ReactMarkdown from "react-markdown";
 import { useState } from 'react';
 
 function Demo() {
@@ -127,8 +128,8 @@ function Demo() {
                     {response && !error && (
                         <div className="mb-4">
                             <h6>Generated Claims:</h6>
-                            <div className="bg-light p-3 rounded" style={{whiteSpace: 'pre-wrap'}}>
-                                {response}
+                            <div className="bg-light p-3 rounded" style={{whiteSpace: 'pre-wrap'}} markdown="1">
+                                <ReactMarkdown>{response}</ReactMarkdown>
                             </div>
                         </div>
                     )}
